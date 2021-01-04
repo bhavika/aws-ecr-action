@@ -7,6 +7,7 @@ function main() {
   sanitize "${INPUT_REGION}" "region"
   sanitize "${INPUT_ACCOUNT_ID}" "account_id"
   sanitize "${INPUT_REPO}" "repo"
+  sanitize "${INPUT_EXTRA_BUILD_ARGS}" "extra_build_args"
 
   ACCOUNT_URL="$INPUT_ACCOUNT_ID.dkr.ecr.$INPUT_REGION.amazonaws.com"
 
@@ -14,7 +15,7 @@ function main() {
   assume_role
   login
   run_pre_build_script $INPUT_PREBUILD_SCRIPT
-  docker_build $INPUT_TAGS $ACCOUNT_URL
+  docker_build $INPUT_TAGS $ACCOUNT_URL $INPUT_EXTRA_BUILD_ARGS
   create_ecr_repo $INPUT_CREATE_REPO
   docker_push_to_ecr $INPUT_TAGS $ACCOUNT_URL
 }
@@ -80,7 +81,7 @@ function docker_build() {
     docker_tag_args="$docker_tag_args -t $2/$INPUT_REPO:$tag"
   done
 
-  docker build $INPUT_EXTRA_BUILD_ARGS -f $INPUT_DOCKERFILE $docker_tag_args $INPUT_PATH
+  docker build -f $INPUT_DOCKERFILE $INPUT_EXTRA_BUILD_ARGS $docker_tag_args $INPUT_PATH
   echo "== FINISHED DOCKERIZE"
 }
 
